@@ -1,0 +1,647 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Chapter 2: Operations in PostgreSQL - DBMS Implementation</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="chapter_1.html"><strong aria-hidden="true">1.</strong> Chapter 1</a></li><li class="chapter-item expanded "><a href="chapter_2.html" class="active"><strong aria-hidden="true">2.</strong> Chapter 2: Operations in PostgreSQL</a></li><li class="chapter-item expanded "><a href="chapter_3.html"><strong aria-hidden="true">3.</strong> Chapter 3: Operation in Different File Structure</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">DBMS Implementation</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="chapter2-operations-in-postgresql"><a class="header" href="#chapter2-operations-in-postgresql">Chapter2: Operations in PostgreSQL</a></h1>
+<h1 id="dbms-architecture"><a class="header" href="#dbms-architecture">DBMS Architecture</a></h1>
+<p><img src="./image/2%20Operations%20in%20PostgreSQL%20e532223ea6e4487c80f7f696b7b7e404/Untitled%201.png" alt="Untitled" /></p>
+<p>这章我们关注的是<strong>Relational Operators</strong> 和 <strong>Access Methods</strong></p>
+<h1 id="relational-operations"><a class="header" href="#relational-operations"><strong>Relational Operations</strong></a></h1>
+<p><strong>DBMS</strong>的核心就是 <strong>relational engine</strong>, 用以实现:</p>
+<ul>
+<li>selection, projection, join, set operationsscanning, sorting, grouping, aggregation, ...等逻辑操作</li>
+</ul>
+<p>这章会深入研究<strong>每种操作</strong>的<strong>实现方法</strong>, 为每种实现开发相应的<strong>成本模型,</strong> 并对每种方法何时<strong>最为有效</strong>进行特征化</p>
+<p>我们从两个维度定义了查询方法:</p>
+<ul>
+<li><strong>关系逻辑操作 (Relational Operation):</strong> 比如是 SELECTION, PROJECTION 还是 JOIN 等</li>
+<li><strong>访问方式 (Access Method):</strong> 定义了文件结构，是索引式 (Indexed)，哈希 (Hashed) 等</li>
+</ul>
+<p>对于查询方法, 我们最关心的就是该<strong>查询方法的代价(Cost)</strong>, 因此我们需要定义一个<strong>Cost Model</strong></p>
+<h1 id="cost-model"><a class="header" href="#cost-model">Cost Model</a></h1>
+<p>正如前文所述, 我们关心不同查询方法的代价(Cost); Cost由两部分组成:</p>
+<ul>
+<li>Time cost：执行该查询方法所用的总时间
+<ul>
+<li>但是在实际运行中Time cost受到许多因素干扰, 如硬件, 所以我们更关注Page cost</li>
+</ul>
+</li>
+<li>Page cost：执行该查询方法过程中读写的总 page 数量
+<ul>
+<li>但是Page cost受到Buffering 的影响如有多上个buffer, 选择了什么 Replacement Strategy</li>
+<li>因此, 再计算Page cost时我们粗略的估计每次读/写/更新操作都会<strong>直接与 Disk 进行, 不考虑有Buffer的情况</strong></li>
+</ul>
+</li>
+</ul>
+<p>在了解了Cost Model之后, 我们看看分析每个关系逻辑操作</p>
+<h1 id="scanning"><a class="header" href="#scanning">Scanning</a></h1>
+<p>这一节我们来看看Scanning, Scanning是指对数据库中的数据进行逐行遍历的操作, 如**<code>select** ***** **from** Rel;</code></p>
+<p>我们考虑两种情况, 一种是没有Overflow pages, 一种是有Overflow pages</p>
+<h2 id="没有overflow-pages"><a class="header" href="#没有overflow-pages">没有Overflow Pages</a></h2>
+<p>我们先看看没有Overflow pages 的文件结构(File Structure):</p>
+<p><img src="./image/2%20Operations%20in%20PostgreSQL%20e532223ea6e4487c80f7f696b7b7e404/Untitled%201.png" alt="Untitled" /></p>
+<p>Scanning操作是扫描所有 page 中的所有 tuple, 代码如下</p>
+<pre><code class="language-cpp">for each page P in file of relation Rel {
+	for each tuple T in page P {
+		add tuple T to result set
+	}
+}
+</code></pre>
+<p>这里的Cost = Number of all pages = b</p>
+<p>接下来考虑有Overflow pages 的情况</p>
+<h2 id="有overflow-pages"><a class="header" href="#有overflow-pages">有Overflow Pages</a></h2>
+<p>我们先看看有Overflow pages 的文件结构(File Structure):</p>
+<p><img src="./image/2%20Operations%20in%20PostgreSQL%20e532223ea6e4487c80f7f696b7b7e404/Untitled%202.png" alt="Untitled" /></p>
+<p>简易的思路就是:</p>
+<ul>
+<li>先遍历一个Page 里面所有的Tuple, 然后检查这个Page 有没有Overflow pages, 如果有, 遍历Overflow page, 在检测该Overflow pages有没有Overflow pages, 代码如下:</li>
+</ul>
+<pre><code class="language-cpp">for each page P in file of relation Rel {
+	for each tuple T in page P {
+		add tuple T to result set
+	}
+	for each overflow page in page {
+		for each tuple in overflow page {
+			add tuple T to result set
+		}
+	}
+}
+</code></pre>
+<p>这里的Cost = Number of all pages + Number of all overflow pages = $b + b_{ov}$($b_{ov}$是Overflow pages的总数)</p>
+<p>到现在我们考虑的都是全扫描的情况, 但是如果不是全扫描, 扫描到特定的Tuple 就不需要再扫描了, 这就是一个条件查询, 如<code>SELECT * FROM Employee WHERE id=762288;</code> (需保证结果只有一个)</p>
+<p>我们先看看该条件查询的文件结构(File Structure):</p>
+<p><img src="./image/2%20Operations%20in%20PostgreSQL%20e532223ea6e4487c80f7f696b7b7e404/Untitled%203.png" alt="Untitled" /></p>
+<ul>
+<li>$r9$代表待查询的Tuple</li>
+</ul>
+<p>建议思路就是:</p>
+<ul>
+<li>查询Page里面所有的Tuple, 直到找到 $id == 762288$, 代码如下</li>
+</ul>
+<pre><code class="language-cpp">for each page P in relation Employee {
+	for each tuple t in page P {
+		if (t.id == 762288) return t
+	}  
+}
+</code></pre>
+<p>这里Cost就需要分三种情况了, 因为不知道Tuple 存储在那个Page里面:</p>
+<ul>
+<li>最坏的情况 (Worst Case): 完全扫描/找不到答案, 或者答案在最后一个page里, $Cost = b$</li>
+<li>最好的情况 (Best Case): 一发击中, $Cost = 1$</li>
+<li>平均情况 (Average Case): 平均扫描半数的 page, $Cost=\frac{b}{2}$</li>
+</ul>
+<p>对于上述的扫描，我们一般都需要使用迭代器 (Iterator) 来实现</p>
+<h2 id="关于scan的迭代器iterator"><a class="header" href="#关于scan的迭代器iterator">关于Scan的迭代器Iterator</a></h2>
+<ul>
+<li>Scan s = start_scan(Relation r, ...)
+<ul>
+<li>表示开始扫描关系<code>r</code> , 可以添加一些条件，比如 <code>WHERE</code> 语句</li>
+</ul>
+</li>
+<li>Tuple next_tuple(Scan s)
+<ul>
+<li>紧接着上次访问的内容返回<strong>下一个</strong> <code>Tuple</code> , 如果关系中不再有 <code>Tuple</code>，则返回 <code>NULL</code> , 示例代码如下:</li>
+</ul>
+</li>
+</ul>
+<pre><code>Tuplenext_tuple(Scan s)
+{
+if (s-&gt;curTID&gt;= nTuples(s-&gt;page)-1) {
+// get a new page; exhausted current pages-&gt;curPID++;
+if (s-&gt;curPID&gt;= nPages(s-&gt;rel))
+return NULL;
+else {
+         s-&gt;page= get_page(s-&gt;rel, s-&gt;curPID);
+         s-&gt;curTID=-1;
+      }
+   }
+   s-&gt;curTID++;
+return get_tuple(s-&gt;rel, s-&gt;page, s-&gt;curTID);
+}
+</code></pre>
+<p>下面的例子用于使用迭代器来实现  <code>SELECT name FROM Employee</code></p>
+<pre><code class="language-cpp"> DB db = openDatabase("myDB"); 
+ Relation r = openRelation(db,"Employee",READ); 
+ Scan s = start_scan(r); 
+ Tuple t; // current tuple 
+ while ((t = next_tuple(s)) != NULL) { 	
+ 	char *name =
+ 	getStrField(t,2); 	
+ 	printf("%s\n", name); 
+ }
+</code></pre>
+<p>Scan实际上是一个指向 Structure Scandata 的指针，这个 Structure 保存一些进<strong>行扫描的关键信息</strong>, 示例代码如下:</p>
+<pre><code class="language-cpp">typedef ScanData *Scan;
+typedef struct {
+ 	Relation rel;
+ 	Page *curPage; // Page buffer
+ 	int curPID; // current pid 	
+ 	int curTID; // current tid
+}	ScanData;
+</code></pre>
+<p>在Select语句中, 还有一个语句是 <code>CREATE TABLE T AS (SELECT * FROM S);</code> , 其中需要把 Table 中的数据全部复制给一个新的 Table, 这就涉及到了Relation copy的操作</p>
+<h1 id="relation-copying"><a class="header" href="#relation-copying"><strong>Relation Copying</strong></a></h1>
+<p>对于该语句 <code>CREATE TABLE T AS (SELECT * FROM S);</code> , 它的实现代码如下:</p>
+<pre><code class="language-cpp">make empty relation T
+s = start scan of S
+while (t = next_tuple(s)) {
+	insert tuple t into relation T
+}
+</code></pre>
+<p>其中新的 $Table\ T \le Table\ S$, 其原因是Table S 的 Pages 中，可能会有一些 Tuple 被删除了, 而在Copying 的过程中, 是不断的向新的Tuple T 进行append Tuple, 因此会使新的Table 变得比较紧密(Compact)</p>
+<p>上述的示例只适用于<strong>heap files</strong>, 即:</p>
+<ul>
+<li>简单、无序、可能有索引、没有散列</li>
+</ul>
+<p>PostgreSQL中的其他访问文件结构有:</p>
+<ul>
+<li>btree, hash, gist, gin</li>
+</ul>
+<p>在了解完Scanning这个关系逻辑操作之后, 我们将会在下一节看看Sorting 这个关系逻辑操作</p>
+<h1 id="sorting"><a class="header" href="#sorting">Sorting</a></h1>
+<p>在使用SQL查询时, 可以使用 <code>ORDER BY</code> 来显示使用排序操作, 也有在某些操作中隐式使用排序, 比如:</p>
+<ul>
+<li>消除重复的元组以进行 projection</li>
+<li>对文件排序以提高 SELECT 效率</li>
+<li>实现各种风格的 JOIN</li>
+<li>使用 GROUP BY 来进行聚合</li>
+</ul>
+<p>存在两种数据的存储位置</p>
+<ul>
+<li>内存
+<ul>
+<li>内存中的数据可以直接访问, 并且内存通常具有较高的读写速度, 所以我们可以使用<strong>快速排序</strong>等排序算法</li>
+</ul>
+</li>
+<li>磁盘
+<ul>
+<li>在磁盘上对大量数据进行排序, 可能会导致频繁的磁盘读写操作, 效率低下, 所以我们需要External sort, 如<strong>Merge sort</strong></li>
+</ul>
+</li>
+</ul>
+<p>操作如下:</p>
+<ol>
+<li>在每个Page 内部进行排序</li>
+<li>之后再两两归并</li>
+</ol>
+<p>那么最少需要3个 in-memory buffer</p>
+<p><img src="./image/2%20Operations%20in%20PostgreSQL%20e532223ea6e4487c80f7f696b7b7e404/Untitled%204.png" alt="Untitled" /></p>
+<p>我们假设在内存中，两个 buffer 的合并操作的代价约为 0</p>
+<p>在Merge 中, 我们需要不断地比较两个Tuple, 代码实现如下:</p>
+<pre><code class="language-cpp">int tupCompare(r1,r2,f)
+{
+	if (r1.f &lt; r2.f) return -1;
+	if (r1.f &gt; r2.f) return 1;
+	return 0;
+}
+</code></pre>
+<ul>
+<li>返回值:
+<ul>
+<li>-1: r1在r2之前</li>
+<li>1: r1在r2之后</li>
+<li>0: 相等, 位置不变</li>
+</ul>
+</li>
+</ul>
+<p>复杂情况我们需要基于多个属性 (attributes) 来进行对比, <code>SELECT * FROM students ORDER BY age desc, year_enrolled;</code> 代码如下:</p>
+<pre><code class="language-cpp">int tupCompare(r1,r2,criteria)
+{
+	for each (f,ord) in criteria {
+		if (ord == ASC) {
+			if (r1.f &lt; r2.f) return -1;
+			if (r1.f &gt; r2.f) return 1;
+		}
+		else {
+			if (r1.f &gt; r2.f) return -1;
+			if (r1.f &lt; r2.f) return 1;}
+		}
+	return 0;
+}
+</code></pre>
+<ul>
+<li>f: 属性</li>
+<li>ord: 排序顺序(ASC 或 DESC)</li>
+<li>criteria: 每个属性以及对应的排序顺序</li>
+</ul>
+<p>接下来我们对Sorting 的 Cost 进行分析</p>
+<h2 id="cost-analysis"><a class="header" href="#cost-analysis">Cost Analysis</a></h2>
+<ul>
+<li>Cost of <strong>Two-way Merge Sort</strong>
+<ul>
+<li>$2 * b * ceil(log_2(b))$
+<ul>
+<li>b: a file containing <code>b</code> data pages</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Cost of  <strong>n-way Merge Sort</strong>
+<ul>
+<li>$2 * b * (1 + ceil(log_n(b_0)))$
+<ul>
+<li>$b_0$: b_0 = ceil(b / B)</li>
+<li>B: uses <code>B</code> total buffers</li>
+<li>n: n = B - 1</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h1 id="projection"><a class="header" href="#projection">Projection</a></h1>
+<p>接下来我们来看看一个比较重要的逻辑关系操作Projection , Projection就是从关系中选择特定的列或属性, 如 <strong><code>select distinct name,age from Employee;</code></strong> , 从employee中选择name属性和age属性</p>
+<p>大概步骤如下:</p>
+<ol>
+<li>扫描整个关系</li>
+<li>在输出中移除不需要的属性
+<ol>
+<li>基本上是创建一个具有较少属性的新元组，其中的值可以从现有属性中计算而来。</li>
+</ol>
+</li>
+<li>消除生成的任何重复项(如果有 <code>DISTINCT</code> 关键字), 有两种方法:
+<ol>
+<li>sorting </li>
+<li>hashing</li>
+</ol>
+</li>
+</ol>
+<p>我们需要一个 <code>Tuple projTuple(AttrList, Tuple)</code> 函数帮助我们, 参数为</p>
+<ul>
+<li>属性列表</li>
+<li>包含这些属性（以及更多属性）的元组</li>
+</ul>
+<p>输出为:</p>
+<ul>
+<li>一个目标属性列表</li>
+</ul>
+<p>对于 <code>Projection</code> 的实现, 有两种实现, 第一种是<strong>without distinct</strong>, 第二种是<strong>with distinct</strong></p>
+<h2 id="implementation-without-distinct"><a class="header" href="#implementation-without-distinct">Implementation Without Distinct</a></h2>
+<p>如果不需要去重, 那么Projection 操作就变得很简单, 步骤如下:</p>
+<ol>
+<li>Scan pages</li>
+<li>使用projTuple 函数将对应的attribute 放入新的projected_tuple 变量里</li>
+<li>projected_tuple 将放入输出Buffer</li>
+</ol>
+<pre><code class="language-cpp">#  attrs = [attr1, attr2, ...]
+for page in pages(rel):
+   for _tuple in tuples(page):
+      projected_tuple = projTuple(attrs, T)
+      if (outBuf is full):
+          # write ouput and clear
+      outBuf.append(projected_tuple)
+
+if nTuples(outBuf) &gt; 0: 
+    # write output
+</code></pre>
+<h2 id="implementation-with-distinct"><a class="header" href="#implementation-with-distinct">Implementation With Distinct</a></h2>
+<p>这个时候的Projection 比之前没有Distinct 的Projection 就多了一个去重操作, 去重操作可以通过 <code>Sort</code> 和 <code>Hash</code> 实现</p>
+<p>现在我们来看看使用 <code>Sorting</code> 方法实现的Distinct</p>
+<h3 id="sort-based-projection"><a class="header" href="#sort-based-projection"><strong>Sort-based Projection</strong></a></h3>
+<p>基本思路如下:</p>
+<ol>
+<li>Scan pages</li>
+<li>使用projTuple 函数将对应的Tuple 放入新的变量里</li>
+<li>对新的变量进行排序</li>
+<li>遍历新的变量, 如果当前Tuple 与之前的Tuple相等, continue; 如果不相等, 则将该Tuple 存入输出</li>
+<li>更新之前的Tuple</li>
+</ol>
+<p>代码如下:</p>
+<pre><code class="language-cpp">for each tuple T in Rel {
+    T' = mkTuple([attrs],T)
+    write T' to Temp
+}
+
+sort Temp on [attrs]
+
+for each tuple T in Temp {
+    if (T == Prev) continue
+    write T to Result
+    Prev = T
+}
+</code></pre>
+<p>现在我们来看看这个方法的Cost:</p>
+<ul>
+<li>扫描原本的 Relation Data File 的所有 Page: bR</li>
+<li>把符合条件的 Tuple 写入一个临时 Relation: bT</li>
+<li>对临时 Relation Data File 中的 Tuples 进行排序（使用外部排序算法）: 2*bT *ceil(logn b0 ), b0 = ceil(bT /B)</li>
+<li>扫描整个排好序的临时 Relation，移除重复 Tuples: bT</li>
+<li>把结果写入 Result Relation: bOut</li>
+</ul>
+<p>$b_R + b_T + 2\times b_T .ceil(log_n{b0} ) + b_T + b_{Out}$</p>
+<p>接下来看看基于Hash 的去重</p>
+<h3 id="hash-based-projection"><a class="header" href="#hash-based-projection"><strong>Hash-based Projection</strong></a></h3>
+<p>基本思路就是将原Relation 的所有Page <strong>一个一个</strong>读入 Buffer，然后根据其中每个Tuple 的内容，使用Hash Function 将其放入众多 Output Buffer 中的一个, 每当Output Buffer 被写满，就将其写入 Disk 的一个 Partition，然后重新向该 Buffer 中添加 Tuples</p>
+<p><img src="./image/2%20Operations%20in%20PostgreSQL%20e532223ea6e4487c80f7f696b7b7e404/Untitled%205.png" alt="Untitled" /></p>
+<p>接下来将每个 Partition (Page) 一个个读入，再次使用一个新的 Hash Function, 那么所有相同的Tuple 会分配到一个Output buffer里. 此时在每个Output Buffer 中都会进行自我扫描, 用于去除重复的 Tuples, 之后写到 Result Page 中, 代码如下:</p>
+<pre><code class="language-cpp">for each tuple T in relation Rel {
+    T' = mkTuple([attrs],T)
+    H = h1(T', n)
+    B = buffer for partition[H]
+    if (B full) write and clear B
+    insert T' into B
+}
+for each partition P in 0..n-1 {
+    for each tuple T in partition P {
+        H = h2(T, n)
+        B = buffer for hash value H
+        if (T not in B) insert T into B
+        // assumes B never gets full
+    }
+    write and clear all buffers
+}
+</code></pre>
+<p>现在我们来看看这个方法的Cost:</p>
+<ul>
+<li>扫描原始关系: bR</li>
+<li>写入分区: bP</li>
+<li>重新读取分区: bP</li>
+<li>写入结果关系: bOut</li>
+</ul>
+<p>$b_R + 2b_P + b_{Out}$</p>
+<ul>
+<li>需要 sqrt(bR )+1 个buffers</li>
+<li><strong>最终得到的结果并不会保证是排序的</strong></li>
+</ul>
+<p>有两个特殊情况, 一个是<strong>Projection on Primary Key</strong>, 一个是<strong>Index-only Projection</strong></p>
+<p>其中<strong>Projection on Primary Key</strong>可以不使用上面的方法, 因为主键已经保证了不会有重复, 实现代码如下:</p>
+<pre><code class="language-cpp">bR = nPages(Rel)
+for i in 0 .. bR-1 {
+   P = read page i
+   for j in 0 .. nTuples(P) {
+      T = getTuple(P,j)
+      **T' = mkTuple(pk, T)**
+      if (outBuf is full) write and clear
+      append T' to outBuf
+   }
+}
+if (nTuples(outBuf) &gt; 0) write
+</code></pre>
+<p><strong>Index-only Projection</strong> 是指数据库系统只需通过索引即可获取查询所需的数据, 完全不需要再访问 Data File</p>
+<p>它的Cost 为: $b_i + b_{Out}$</p>
+<ul>
+<li>$b_i$: Index has <code>b_i</code> pages</li>
+</ul>
+<p>对于<strong>Index-only, Sort-based, Hash-based projection</strong>的<strong>对比</strong>:</p>
+<ul>
+<li><strong>Index-only projection:</strong> 需要一个适当的索引来实现。在有合适索引的情况下，它的性能非常高</li>
+<li><strong>Hash-based projection:</strong> 需要缓冲区和良好的哈希函数, 在合适的情况下，它可以比基于索引的方法更有效</li>
+<li><strong>Sort-based projection:</strong> 默认情况下使用的方法, 成本相对较高</li>
+</ul>
+<p>现在我们结束了SQL里面的Projection 操作, 接下来去看看Selection 操作</p>
+<h1 id="selection"><a class="header" href="#selection">Selection</a></h1>
+<p>现在我们详细的来看看SQL 操作语句: SELECT, SELECT 操作用于<strong>从一个关系 R</strong> 中筛选出<strong>满足条件 C</strong> 的元组子集, 其中C是基于<strong>属性值</strong>的. 该语句可以实现三种不同类型的选择操作:</p>
+<ul>
+<li>1维选择(one dimensional): 条件只涉及一个属性</li>
+<li>多维选择(multi-dimensional): 条件涉及多个属性</li>
+<li>相似度选择(similarity): 进行近似匹配，并对结果进行排名</li>
+</ul>
+<p>为了更有效率地进行 Selection，有几种比较基本的方法:</p>
+<ol>
+<li>元组的物理排列方式
+<ul>
+<li>排序（搜索策略）</li>
+<li>哈希（静态、动态、多维）</li>
+</ul>
+</li>
+<li>附加的索引信息
+<ul>
+<li>索引文件（主索引、辅助索引、树索引）</li>
+<li>签名（叠加、分离）</li>
+</ul>
+</li>
+</ol>
+<p>由于操作的具体实现与文件结构之间与存在着关系, 特定操作在特定的文件结构中能有很好的性能, 接下来让我们来探究一下</p>
+<h1 id="file-structure"><a class="header" href="#file-structure"><strong>File Structure</strong></a></h1>
+<h2 id="heap-file"><a class="header" href="#heap-file">Heap File</a></h2>
+<p>这里面的Heap不是数据结构中的堆, 仅仅表示一堆 Pages, Heap file 就指:</p>
+<ul>
+<li><strong>包含 Tuples 的一系列 Pages</strong></li>
+<li>Tuples 没有固定的顺序</li>
+<li>Pages 会有因为删除 Tuples 而遗留下来的空闲空间</li>
+<li>通常不涉及 Overflow Pages</li>
+</ul>
+<p>结构图如下:</p>
+<p><img src="./image/2%20Operations%20in%20PostgreSQL%20e532223ea6e4487c80f7f696b7b7e404/Untitled%206.png" alt="Untitled" /></p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="chapter_1.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="chapter_3.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="chapter_1.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="chapter_3.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>
